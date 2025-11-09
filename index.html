@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>햄스터 줄다리기 게임</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 시작 화면 -->
+    <div id="start-screen">
+        <div class="title-container">
+            <h1>🐹 햄스터 줄다리기 🐹</h1>
+            <p>스페이스바를 빠르게 눌러서 덩굴을 먹어요!</p>
+            <button id="start-button">게임 시작</button>
+        </div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="game-container" style="display: none;">
+        <div id="hud">
+            <div class="score-container">
+                <div class="player-info">
+                    <span class="player-label">플레이어 🐹</span>
+                    <div class="progress-bar">
+                        <div id="player-progress" class="progress-fill player"></div>
+                    </div>
+                </div>
+                <div class="center-indicator">
+                    <div id="tug-indicator"></div>
+                </div>
+                <div class="player-info">
+                    <span class="player-label">컴퓨터 🐹</span>
+                    <div class="progress-bar">
+                        <div id="computer-progress" class="progress-fill computer"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="space-counter">스페이스바: 0</div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- 게임 오버 화면 -->
+    <div id="game-over-screen" style="display: none;">
+        <div class="title-container">
+            <h1 id="result-text"></h1>
+            <p id="result-message"></p>
+            <button id="restart-button">다시 시작</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
