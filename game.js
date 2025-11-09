@@ -269,10 +269,10 @@ function updateTugOfWar() {
     playerHamster.position.x = vine.position.x - 3;
     computerHamster.position.x = vine.position.x + 3;
 
-    // 승리 조건 체크 (한쪽이 덩굴을 95% 이상 차지하면 승리)
-    if (playerVine >= 95) {
+    // 승리 조건 체크 (상대방의 덩굴이 1 미만이 되면 승리)
+    if (computerVine < 1) {
         endGame(true);
-    } else if (computerVine >= 95) {
+    } else if (playerVine < 1) {
         endGame(false);
     }
 }
