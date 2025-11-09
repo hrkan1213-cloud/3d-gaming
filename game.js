@@ -2,18 +2,17 @@
 let scene, camera, renderer;
 let playerHamster, computerHamster, vine;
 let gameActive = false;
-let playerScore = 0;
-let computerScore = 0;
+let playerVine = 50; // 플레이어가 먹은 덩굴 양
+let computerVine = 50; // 컴퓨터가 먹은 덩굴 양
 let spacePressed = false;
 let spaceCount = 0;
-let tugPosition = 0; // -100 (컴퓨터 승) ~ 100 (플레이어 승)
 let animationId;
 
 // 게임 설정
 const GAME_SETTINGS = {
-    playerSpeed: 2,
-    computerSpeed: 0.8,
-    winThreshold: 100,
+    playerSpeed: 1.5, // 스페이스바 한 번당 먹는 양
+    computerSpeed: 0.05, // 프레임당 컴퓨터가 먹는 양
+    totalVine: 100, // 총 덩굴 길이
     vineLength: 10
 };
 
@@ -185,9 +184,8 @@ function startGame() {
     document.getElementById('game-container').style.display = 'block';
 
     gameActive = true;
-    playerScore = 0;
-    computerScore = 0;
-    tugPosition = 0;
+    playerVine = 50;
+    computerVine = 50;
     spaceCount = 0;
 
     updateHUD();
@@ -200,9 +198,8 @@ function restartGame() {
     document.getElementById('game-container').style.display = 'block';
 
     gameActive = true;
-    playerScore = 0;
-    computerScore = 0;
-    tugPosition = 0;
+    playerVine = 50;
+    computerVine = 50;
     spaceCount = 0;
 
     // 햄스터 위치 초기화
@@ -219,7 +216,11 @@ function onKeyDown(event) {
     if (event.code === 'Space' && gameActive && !spacePressed) {
         spacePressed = true;
         spaceCount++;
-        playerScore += GAME_SETTINGS.playerSpeed;
+
+        // 컴퓨터의 덩굴을 빼앗아서 플레이어에게 추가
+        const eatAmount = Math.min(GAME_SETTINGS.playerSpeed, computerVine);
+        computerVine -= eatAmount;
+        playerVine += eatAmount;
 
         // 햄스터 애니메이션 (입 벌리기)
         playerHamster.scale.set(1.1, 0.9, 1);
@@ -240,8 +241,10 @@ function onKeyUp(event) {
 function updateComputer() {
     if (!gameActive) return;
 
-    // 컴퓨터가 자동으로 먹음
-    computerScore += GAME_SETTINGS.computerSpeed;
+    // 컴퓨터가 플레이어의 덩굴을 빼앗아서 자신에게 추가
+    const eatAmount = Math.min(GAME_SETTINGS.computerSpeed, playerVine);
+    playerVine -= eatAmount;
+    computerVine += eatAmount;
 
     // 랜덤하게 먹는 애니메이션
     if (Math.random() > 0.7) {
@@ -256,38 +259,36 @@ function updateComputer() {
 function updateTugOfWar() {
     if (!gameActive) return;
 
-    // 스코어 차이로 위치 계산
-    tugPosition = playerScore - computerScore;
+    // 덩굴 비율로 위치 계산 (-1 ~ 1)
+    const vineRatio = (playerVine - computerVine) / GAME_SETTINGS.totalVine;
 
-    // 위치 제한
-    tugPosition = Math.max(-GAME_SETTINGS.winThreshold, Math.min(GAME_SETTINGS.winThreshold, tugPosition));
-
-    // 덩굴 위치 업데이트
-    vine.position.x = (tugPosition / GAME_SETTINGS.winThreshold) * 5;
+    // 덩굴 위치 업데이트 (왼쪽 -5 ~ 오른쪽 5)
+    vine.position.x = vineRatio * 5;
 
     // 햄스터들 위치 업데이트 (덩굴 따라가기)
     playerHamster.position.x = vine.position.x - 3;
     computerHamster.position.x = vine.position.x + 3;
 
-    // 승리 조건 체크
-    if (tugPosition >= GAME_SETTINGS.winThreshold) {
+    // 승리 조건 체크 (한쪽이 덩굴을 95% 이상 차지하면 승리)
+    if (playerVine >= 95) {
         endGame(true);
-    } else if (tugPosition <= -GAME_SETTINGS.winThreshold) {
+    } else if (computerVine >= 95) {
         endGame(false);
     }
 }
 
 // HUD 업데이트
 function updateHUD() {
-    const playerProgress = ((playerScore / (playerScore + computerScore)) * 100) || 50;
-    const computerProgress = ((computerScore / (playerScore + computerScore)) * 100) || 50;
+    const playerProgress = (playerVine / GAME_SETTINGS.totalVine) * 100;
+    const computerProgress = (computerVine / GAME_SETTINGS.totalVine) * 100;
 
     document.getElementById('player-progress').style.width = playerProgress + '%';
     document.getElementById('computer-progress').style.width = computerProgress + '%';
     document.getElementById('space-counter').textContent = '스페이스바: ' + spaceCount;
 
-    // 중앙 인디케이터 위치
-    const indicatorPosition = (tugPosition / GAME_SETTINGS.winThreshold) * 200;
+    // 중앙 인디케이터 위치 (-1 ~ 1 범위로 정규화)
+    const vineRatio = (playerVine - computerVine) / GAME_SETTINGS.totalVine;
+    const indicatorPosition = vineRatio * 200; // -200 ~ 200 픽셀 범위
     document.getElementById('tug-indicator').style.transform = `translateX(${indicatorPosition}px)`;
 }
 
